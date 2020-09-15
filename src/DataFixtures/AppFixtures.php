@@ -30,7 +30,6 @@ class AppFixtures extends Fixture
 
             $user = new User();
 
-            $chrono = 1;
             $hash = $this->encoder->encodePassword($user, "password");
 
             $user->setFirstName($faker->firstName)
@@ -42,6 +41,8 @@ class AppFixtures extends Fixture
 
             for ($c = 0; $c < mt_rand(5, 20); $c++) {
                 $customer = new Customer();
+                $chrono = 1;
+
                 $customer->setFirstName($faker->firstName())
                          ->setLastName($faker->lastName)
                          ->setCompany($faker->company)
