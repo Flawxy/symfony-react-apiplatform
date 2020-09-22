@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react'
+import { toast } from 'react-toastify'
 import Field from '../components/forms/Field'
 import AuthContext from '../contexts/AuthContext'
 import authAPI from '../services/authAPI'
@@ -25,9 +26,12 @@ const LoginPage = ({ history }) => {
       await authAPI.authenticate(credentials)
       setError('')
       setIsAuthenticated(true)
+      toast.success('Vous êtes désormais connecté !')
       history.replace('/customers')
     } catch (error) {
-      setError('Aucun compte ne possède cette adresse email ou alors les informations ne correspondent pas !')
+      setError(
+        'Aucun compte ne possède cette adresse email ou alors les informations ne correspondent pas !')
+      toast.error('Une erreur est survenue')
     }
   }
 
