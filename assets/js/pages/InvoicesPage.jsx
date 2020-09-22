@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import TableLoader from '../components/loaders/TableLoader'
 import Pagination from '../components/Pagination'
 import moment from 'moment'
 
@@ -21,6 +23,7 @@ const InvoicesPage = (props) => {
   const [invoices, setInvoices] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
   const itemsPerPage = 10
 
   // Récupération des invoices auprès de l'API
@@ -28,12 +31,13 @@ const InvoicesPage = (props) => {
     try {
       const data = await invoicesAPI.findAll()
       setInvoices(data)
+      setLoading(false)
     } catch (error) {
-      console.log(error.response)
+      toast.error('Erreur lors du chargement des factures !')
     }
   }
 
-  // Charger les invocies au chargement du composant
+  // Charger les invoices au chargement du composant
   useEffect(() => {
     fetchInvoices()
   }, [])
@@ -54,8 +58,9 @@ const InvoicesPage = (props) => {
 
     try {
       await invoicesAPI.delete(id)
+      toast.success('La facture a bien été supprimée !')
     } catch (error) {
-      console.log(error.response)
+      toast.error('Une erreur est survenue !')
       setInvoices(originalInvoices)
     }
   }
@@ -103,14 +108,15 @@ const InvoicesPage = (props) => {
             <th />
           </tr>
         </thead>
+        {!loading &&
         <tbody>
           {paginatedInvoices.map(invoice =>
             <tr key={invoice.id}>
               <td>{invoice.chrono}</td>
               <td>
-                <a href='#'>
+                <Link to={'/customers/' + invoice.customer.id}>
                   {invoice.customer.firstName} {invoice.customer.lastName}
-                </a>
+                </Link>
               </td>
               <td className='text-center'>{formatDate(invoice.sentAt)}</td>
               <td className='text-center'>
@@ -133,7 +139,9 @@ const InvoicesPage = (props) => {
             </tr>
           )}
         </tbody>
+        }
       </table>
+      {loading && <TableLoader />}
 
       <Pagination
         currentPage={currentPage}

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Field from '../components/forms/Field'
+import FormContentLoader from '../components/loaders/FormContentLoader'
 import customersAPI from '../services/customersAPI'
 
 const CustomerPage = ({ history, match }) => {
@@ -18,13 +20,16 @@ const CustomerPage = ({ history, match }) => {
     company: ''
   })
   const [editing, setEditing] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   // Récupération du customer en fonction de l'identifiant
   const fetchCustomer = async id => {
     try {
       const { lastName, firstName, email, company } = await customersAPI.find(id)
       setCustomer({ lastName, firstName, email, company })
+      setLoading(false)
     } catch (error) {
+      toast.error('Le client n\'a pas pu être chargé !')
       history.replace('/customers')
     }
   }
@@ -32,6 +37,7 @@ const CustomerPage = ({ history, match }) => {
   // Chargement du customer si besoin au chargement du composant ou au changement de l'identifiant
   useEffect(() => {
     if (id !== 'new') {
+      setLoading(true)
       setEditing(true)
       fetchCustomer(id)
     }
@@ -47,13 +53,15 @@ const CustomerPage = ({ history, match }) => {
   const handleSubmit = async event => {
     event.preventDefault()
     try {
+      setErrors({})
       if (editing) {
         await customersAPI.update(id, customer)
+        toast.success('Le client a bien été modifié !')
       } else {
         await customersAPI.create(customer)
+        toast.success('Le client a bien été créé !')
         history.replace('/customers')
       }
-      setErrors({})
     } catch ({ response }) {
       const { violations } = response.data
       if (violations) {
@@ -62,6 +70,7 @@ const CustomerPage = ({ history, match }) => {
           apiErrors[propertyPath] = message
         })
         setErrors(apiErrors)
+        toast.error('Des erreurs dans votre formulaire !')
       }
     }
   }
@@ -70,6 +79,8 @@ const CustomerPage = ({ history, match }) => {
     <>
       {!editing && <h1>Création d'un client</h1> || <h1>Modification du client</h1>}
 
+      {loading && <FormContentLoader />}
+      {!loading &&
       <form onSubmit={handleSubmit}>
         <Field
           name="lastName"
@@ -106,20 +117,21 @@ const CustomerPage = ({ history, match }) => {
         />
 
         <div className='form-group'>
-          <button
-            type='submit'
-            className='btn btn-success'
-          >
-            Enregistrer
-          </button>
-          <Link
-            to="/customers"
-            className="btn btn-link"
-          >
-            Retour à la liste
-          </Link>
+        <button
+          type='submit'
+          className='btn btn-success'
+        >
+        Enregistrer
+        </button>
+        <Link
+          to="/customers"
+          className="btn btn-link"
+        >
+        Retour à la liste
+        </Link>
         </div>
-      </form>
+        </form>
+      }
     </>
   )
 }
